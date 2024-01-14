@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <title>Food truck</title>
+        <meta charset="UTF-8">
+        <script type='text/javascript'>
+            var map
+            function loadMapScenario() {
+                map = new Microsoft.Maps.Map(document.getElementById('myMap'), {});
+            }
+            function go(latitude,longitude){
+                map.setView({
+                    center: new Microsoft.Maps.Location(latitude,longitude),
+                });
+                var pushpin = new Microsoft.Maps.Pushpin(map.getCenter(), null);
+                map.entities.push(pushpin);
+                pushpin.setOptions({ enableHoverStyle: true, enableClickedStyle: true });
+            }
+            function clearPin(){
+                for (var i = map.entities.getLength() - 1; i >= 0; i--) {
+                    var pushpin = map.entities.get(i);
+                    if (pushpin instanceof Microsoft.Maps.Pushpin) {
+                        map.entities.removeAt(i);
+                    }
+                }
+            }
+        </script>
+        <script type='text/javascript' src='/statics/jquery.js'></script>
+    </head>
+    <body onload='loadMapScenario();'>
+        <div id='myMap' style='width: 97%; height: 50%;'></div>
+        <div style="height: 5px;"></div>
+        <div style="height: 30px; width:95%;">
+            <input type="text" style="width:100%; height:30px; float:left" id="filter" placeholder="search">
+        </div>
+        <div style="height: 5px;"></div>
+        <div style="height:40%;overflow-y: auto; width:97%; height:30px; background-color: yellowgreen" id="coupon"></div>
+        <script type='text/javascript'>
+            var coupon = function(){
+               $.get("/coupon", function(data, status){
+                    if (status=='success') {
+                        document.getElementById('coupon').innerHTML="You got a coupon of " + data.Applicant
+                        coupon()
+                    }
+                })
+            }
+            coupon()
+        </script>
+        <div style="height: 5px;"></div>
+        <div style="height:40%;overflow-y: auto; width:97%;" id="result_list"></div>
+        <script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?key=AhugikDoXS8VfFPZ72T0rq-3SpHOpRPGIydM3lmKWj7l7QrUl3-L-0_anXYShUql&callback=loadMapScenario' async defer></script>
+        <script type='text/javascript'>
+            var filter = document.getElementById("filter").value;
+            var lock;
+            setInterval(function(){
+                var newFilter = document.getElementById("filter").value;
+                if(filter !== newFilter){
+                    filter = newFilter;
+                    if(!lock){
+                        lock=true;
+                        clearPin()
+                        $.get("/find?keyword=" + newFilter, function(data, status){
+                            if (status=='success') {
+                                var result_list = document.getElementById('result_list')
+                                result_list.innerHTML=""
+                                for(var i=0; i<data.length; i++){
+                                    var f=function(){
+                                        var latitude = data[i].Latitude
+                                        var longitude = data[i].Longitude
+                                        var div = document.createElement("div")
+                                        div.onclick = function(){
+                                            go(latitude, longitude)
+                                        }
+                                        div.style="width:100%; height:50px; background-color: greenyellow;"
+                                        var nameDiv = document.createElement("div")
+                                        nameDiv.innerHTML=data[i].Applicant
+                                        div.appendChild(nameDiv)
+                                        var addrDiv = document.createElement("div")
+                                        addrDiv.innerHTML=data[i].LocationDescription
+                                        div.appendChild(addrDiv)
+                                        result_list.appendChild(div)
+                                        var sepDiv=document.createElement("div")
+                                        sepDiv.style="height: 5px;"
+                                        result_list.appendChild(sepDiv)
+                                    }
+                                    f()
+                                }
+                            }
+                            lock=false
+                        })
+                    }
+                }
+            }, 1000)
+        </script>
+    </body>
+</html>

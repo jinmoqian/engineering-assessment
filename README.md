@@ -8,6 +8,10 @@ For perl version, run it by
 
  * perl main.pl
 
+For PHP version(swoole is needed), run it by 
+
+* php main.php 
+
 It will start a process and listen to :8080. You can visit it in browser by http://localhost:8080/.
 
 ## APIs
@@ -26,6 +30,8 @@ For per version, I studied some frameworks to run a web server.
 * Catalyst. It is too heavy for this demo.
 
 I didn't find a good framework, so I wrote a simple webserver by myself. You can see it in perlver/server.pm.
+
+For PHP version, it's lucky that I have swoole. It's much more easier to build a long request supported web server.
 
 The frontend do request by ajax.
 

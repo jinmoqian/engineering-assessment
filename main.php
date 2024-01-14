@@ -3,14 +3,6 @@ use Swoole\Http\Server;
 use Swoole\Coroutine;
 require 'phpver/database.php';
 
-// $scheduler->add(function ($a, $b) {
-//     Coroutine::sleep(1);
-//     echo assert($a == 'hello') . PHP_EOL;
-//     echo assert($b == 12345) . PHP_EOL;
-//     echo "Done.\n";
-// }, "hello", 12345);
-// $scheduler->start();
-
 $db = new Database();
 $funcs = [
     "/" => function($request, $response){
@@ -40,14 +32,12 @@ $funcs = [
     },
     "/coupon" => function($request, $response){
         global $db;
-        $scheduler = new Coroutine\Scheduler;
-        $scheduler->add(function ($request, $response) {
-            Coroutine::sleep(rand(0, 20));
+        Coroutine::create(function()use($request, $response, $db){
+            Coroutine::sleep(rand(1, 20));
             $response->header('Content-Type', 'text/json; charset=utf-8');
             $ret = json_encode($db->random_one());
             $response->end($ret);
         });
-        $scheduler->start();
     },
 ];
 
@@ -65,8 +55,6 @@ $http->on('Request', function ($request, $response) {
     }else{
         $response->status(404, "Not found");
     }
-#    $response->header('Content-Type', 'text/html; charset=utf-8');
-#    $response->end($request->server['path_info']);
 });
 
 $http->start();

@@ -1,7 +1,6 @@
 package database;
 use strict;
 use Text::CSV;
-use Data::Dumper;
 
 sub new(){
     my $pkg = shift;
@@ -17,7 +16,7 @@ sub new(){
     while (my $row = $csv->getline ($fh)) {
         if($this->{ra_header}){
             if(scalar @$row != scalar @{$this->{ra_header}}){
-                die "Column numbers not match"
+                die "Column numbers not match";
             }
             push @{$this->{ra_rows}}, $row;
         }else{

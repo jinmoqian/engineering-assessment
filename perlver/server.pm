@@ -1,6 +1,13 @@
 package server;
 use strict;
 use Socket;
+use POSIX ":sys_wait_h";;
+
+$SIG{CHLD} = sub {
+    while( ( my $child = waitpid( -1, WNOHANG ) ) > 0 ) {
+    }
+};
+
 
 sub extract_params{
     my $s = shift;
@@ -34,9 +41,11 @@ sub run_server{
     listen($socket, 10);
     $| = 0;
     while(1){
-        accept(my $s, $socket);
+        my $accept_ret = accept(my $s, $socket);
+        if (!$accept_ret){
+            next;
+        }
         if (my $pid=fork()){
-
         }else{
             my $path;
             my $query_string;
@@ -56,6 +65,8 @@ sub run_server{
                 print "No handler: ", $path, "\n";
             }
             print "Done:", $path, "\n";
+            close($s);
+            exit(0);
         }
     }
 }
